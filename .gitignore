@@ -1,0 +1,5 @@
+
+*.xml
+*.iml
+out/production/Universal Management System/de/reetmeyer/ums/UniversalManagementSystem.class
+out/production/Universal Management System/de/reetmeyer/ums/UniversalManagementSystemConfig.class
