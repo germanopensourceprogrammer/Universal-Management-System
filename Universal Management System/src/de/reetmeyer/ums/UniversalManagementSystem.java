@@ -1,10 +1,7 @@
 package de.reetmeyer.ums;
 
-import javax.xml.bind.JAXB;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,15 +9,59 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Properties;
 
 public class UniversalManagementSystem {
 
     public ArrayList<Module> modules = new ArrayList<>();
 
+    private int i = 0;
+
     public UniversalManagementSystem() {
 
 
+    }
+
+    public Module getModule(String modulename) {
+        if (!moduleRegistered(modulename)) {
+            System.err.println("Module " + modulename + " is not registered");
+            return null;
+        }
+
+        for (Module m :
+                modules) {
+            if (m.getName().equals(modulename)) return m;
+        }
+        return null;
+
+    }
+    public Module getModule(long moduleid) {
+        if (!moduleRegistered(moduleid)) {
+            System.err.println("Module " + moduleid + " is not registered");
+            return null;
+        }
+
+        for (Module m :
+                modules) {
+            if (m.id == moduleid) return m;
+        }
+        return null;
+
+    }
+
+    public boolean moduleRegistered(String modulename) {
+        for (Module m : modules) {
+            System.out.println(m.getClass());
+            if (m.getName().equals(modulename)) return true;
+        }
+        return false;
+    }
+
+    public boolean moduleRegistered(long moduleid) {
+        for (Module m :
+                modules) {
+            if (m.id == moduleid) return true;
+        }
+        return false;
     }
 
     private void loadModules(String modulefolder) {
@@ -70,8 +111,12 @@ public class UniversalManagementSystem {
             Class classtoload = Class.forName(myclass, true, cl);
             Method met = classtoload.getDeclaredMethod("run");
             Module instance = (Module) classtoload.newInstance();
-            met.invoke(null);
-            instance.OnLoad();
+//            met.invoke(null);
+//            instance.OnLoad();
+            instance.id = i;
+            instance.master = this;
+            i++;
+            modules.add(instance);
             System.out.println("Loaded Module:");
             System.out.println("Name: " + instance.getName());
             System.out.println("END");
@@ -85,8 +130,6 @@ public class UniversalManagementSystem {
             e.printStackTrace();
         } catch (InstantiationException e) {
             e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
         }
     }
 
@@ -94,6 +137,7 @@ public class UniversalManagementSystem {
     public static void main(String[] args) {
         UniversalManagementSystem ums = new UniversalManagementSystem();
         ums.loadModules("E:\\Ums\\modules");
+        System.out.println(ums.moduleRegistered("SomeModule"));
     }
 
 

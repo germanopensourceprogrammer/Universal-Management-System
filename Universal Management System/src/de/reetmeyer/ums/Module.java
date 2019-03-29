@@ -1,9 +1,18 @@
 package de.reetmeyer.ums;
 
-public class Module {
+import javax.swing.*;
+
+public class Module{
+
+    public int id;
+    public UniversalManagementSystem master;
 
     public String getName () {
         return null;
+    }
+
+    public UniversalManagementSystem getMaster() {
+        return master;
     }
 
     public void OnLoad (){
