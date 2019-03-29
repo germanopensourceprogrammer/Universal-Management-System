@@ -4,42 +4,97 @@ import javax.xml.bind.JAXB;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Properties;
-
-/*
-    Config parms:
-    networkconfig               = networkconfigfilepath
-
-*/
 
 public class UniversalManagementSystem {
 
-    String NETWORKCONFIGKEY = "networkconfig";
+    public ArrayList<Module> modules = new ArrayList<>();
 
-    int UNIVERSALMANAGEMENTSYSTEMLEVEL = 1;
+    public UniversalManagementSystem() {
 
-    public UniversalManagementSystem (String configfilepath) {
+
+    }
+
+    private void loadPlugins(String pluginfolder) {
+
+        File f = new File(pluginfolder);
+        String[] pluginfolders = f.list();
+        for (String s :
+                pluginfolders) {
+            loadPlugin(pluginfolder+"\\"+s, s);
+        }
+
+        //loadPlugin("E:\\Ums\\plugins\\Test");
+
+    }
+
+    private void loadPlugin (String folderpath, String modulename) {
+        System.out.println("Loading Module from " + folderpath);
+        String mainclass = null;
+        String jar = null;
+        if (!new File(folderpath + "\\config").exists()) {
+            System.err.println("Module \"" + modulename + "\" has no Config");
+            return;
+        }
         try {
-            Properties config = new Properties();
-            config.load(new FileInputStream(configfilepath));
-            if (!config.containsKey(NETWORKCONFIGKEY)) {
-                System.err.println("Configfile doesn't contains " + NETWORKCONFIGKEY);
-                System.exit(1);
+            String[] lines = Files.readAllLines(Paths.get(folderpath + "\\config")).toArray(new String[0]);
+            for (String line :
+                    lines) {
+                if (line.contains("mainclass")) mainclass = line.replace("mainclass:", "");
+                if (line.contains("jar")) jar = line.replace("jar:","");
             }
-            loadPlugins(UNIVERSALMANAGEMENTSYSTEMLEVEL);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (mainclass == null || jar == null) {
+            System.err.println("Mainclass or Jar is not identified in Config");
+            return;
+        }
+        System.out.println("Starting Load");
+        loadJar(folderpath + "\\" + jar, mainclass);
     }
 
-    private void loadPlugins(int universalmanagementsystemlevel) {
-
+    private void loadJar(String myjar, String myclass) {
+        try {
+            URLClassLoader cl = new URLClassLoader(new URL[]{new URL("file:\\\\\\"+myjar)}, this.getClass().getClassLoader());
+            Class classtoload = Class.forName(myclass, true, cl);
+            Method met = classtoload.getDeclaredMethod("run");
+            Module instance = (Module) classtoload.newInstance();
+            met.invoke(null);
+            instance.OnLoad();
+            System.out.println("Loaded Module:");
+            System.out.println("Name: " + instance.getName());
+            System.out.println("END");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
 
-    static public void main(String[] args) {
-        UniversalManagementSystem ums = new UniversalManagementSystem("");
+    public static void main(String[] args) {
+        UniversalManagementSystem ums = new UniversalManagementSystem();
+        ums.loadPlugins("E:\\Ums\\plugins");
     }
+
 
 }
