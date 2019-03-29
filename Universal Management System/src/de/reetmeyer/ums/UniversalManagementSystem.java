@@ -23,20 +23,20 @@ public class UniversalManagementSystem {
 
     }
 
-    private void loadPlugins(String pluginfolder) {
+    private void loadModules(String modulefolder) {
 
-        File f = new File(pluginfolder);
-        String[] pluginfolders = f.list();
+        File f = new File(modulefolder);
+        String[] modulefolders = f.list();
         for (String s :
-                pluginfolders) {
-            loadPlugin(pluginfolder+"\\"+s, s);
+                modulefolders) {
+            loadModule(modulefolder + "\\" + s, s);
         }
 
-        //loadPlugin("E:\\Ums\\plugins\\Test");
+        //loadModule("E:\\Ums\\modules\\Test");
 
     }
 
-    private void loadPlugin (String folderpath, String modulename) {
+    private void loadModule(String folderpath, String modulename) {
         System.out.println("Loading Module from " + folderpath);
         String mainclass = null;
         String jar = null;
@@ -49,7 +49,7 @@ public class UniversalManagementSystem {
             for (String line :
                     lines) {
                 if (line.contains("mainclass")) mainclass = line.replace("mainclass:", "");
-                if (line.contains("jar")) jar = line.replace("jar:","");
+                if (line.contains("jar")) jar = line.replace("jar:", "");
             }
 
         } catch (IOException e) {
@@ -66,7 +66,7 @@ public class UniversalManagementSystem {
 
     private void loadJar(String myjar, String myclass) {
         try {
-            URLClassLoader cl = new URLClassLoader(new URL[]{new URL("file:\\\\\\"+myjar)}, this.getClass().getClassLoader());
+            URLClassLoader cl = new URLClassLoader(new URL[]{new URL("file:\\\\\\" + myjar)}, this.getClass().getClassLoader());
             Class classtoload = Class.forName(myclass, true, cl);
             Method met = classtoload.getDeclaredMethod("run");
             Module instance = (Module) classtoload.newInstance();
@@ -93,7 +93,7 @@ public class UniversalManagementSystem {
 
     public static void main(String[] args) {
         UniversalManagementSystem ums = new UniversalManagementSystem();
-        ums.loadPlugins("E:\\Ums\\plugins");
+        ums.loadModules("E:\\Ums\\modules");
     }
 
 
